@@ -204,3 +204,75 @@ geographic center: 39.375°N, 34.395°E, 0m sealevel, 7414.960km average distanc
 parameters: 30arcsec (0.93km) map resolution, 6arcsec (0.19km) calculation resolution, 0m antarctic threshold
 completed: 29s, 114 iterations
 ```
+
+```
+% java -Xmx8G -Dsealevel=0 -Dsquaremode=true -Dmap=ETOPO_2022_v1_30s_N90W180_surface_uncompressed.tif EarthCenter2025.java
+Geographic Center of Earth Calculator
+(c) 2003 - 2025 Holger Isenberg @areoinfo https://areo.info
+version: sequential gradient descent 20250825
+loading map: ETOPO_2022_v1_30s_N90W180_surface_uncompressed.tif
+mode: minimum sum of greatcircle distance squares
+display: 3840x1920
+map raster: 43200x21600
+calculation raster: 216000x108000
+processors: 10
+sea level=0m, antarctic threshold=70m, elevation max=8353m, map width: 43200px
+land area: 171099298, sea area: 422943343, land ratio: 29%
+elevation mean flat: 377.62m
+elevation mean half-flat: 146.83m
+elevation mean global: 230.63m
+elevation mean above sealevel: 800.74m
+elevation median global: 0.00m
+elevation median above sealevel: 423.00m
+geographic center of distance squares: 33.867°N, 27.223°E, 0m sealevel, 10882.522km average distance
+parameters: 30arcsec (0.93km) map resolution, 6arcsec (0.19km) calculation resolution, 70m antarctic threshold
+completed: 28s, 123 iterations
+```
+
+```
+% java -Xmx8G -Dsealevel=178 -Dsquaremode=true -Dmap=ETOPO_2022_v1_30s_N90W180_surface_uncompressed.tif EarthCenter2025.java
+Geographic Center of Earth Calculator
+(c) 2003 - 2025 Holger Isenberg @areoinfo https://areo.info
+version: sequential gradient descent 20250825
+loading map: ETOPO_2022_v1_30s_N90W180_surface_uncompressed.tif
+mode: minimum sum of greatcircle distance squares
+display: 3840x1920
+map raster: 43200x21600
+calculation raster: 216000x108000
+processors: 10
+sea level=+178m, antarctic threshold=70m, elevation max=8175m, map width: 43200px
+land area: 127589793, sea area: 466452848, land ratio: 21%
+elevation mean flat: 324.94m
+elevation mean half-flat: 118.49m
+elevation mean global: 186.12m
+elevation mean above sealevel: 866.55m
+elevation median global: 0.00m
+elevation median above sealevel: 460.00m
+geographic center of distance squares: 28.173°N, 27.320°E, +178m sealevel, 10817.454km average distance
+parameters: 30arcsec (0.93km) map resolution, 6arcsec (0.19km) calculation resolution, 70m antarctic threshold
+completed: 24s, 115 iterations
+```
+
+```
+% java -Xmx8G -Dantarctic=0 -Dsealevel=0 -Dsquaremode=true -Dmap=ETOPO_2022_v1_30s_N90W180_surface_uncompressed.tif EarthCenter2025.java
+Geographic Center of Earth Calculator
+(c) 2003 - 2025 Holger Isenberg @areoinfo https://areo.info
+version: sequential gradient descent 20250825
+loading map: ETOPO_2022_v1_30s_N90W180_surface_uncompressed.tif
+mode: minimum sum of greatcircle distance squares
+display: 3840x1920
+map raster: 43200x21600
+calculation raster: 216000x108000
+processors: 10
+sea level=0m, antarctic threshold=0m, elevation max=8353m, map width: 43200px
+land area: 172467295, sea area: 421575346, land ratio: 29%
+elevation mean flat: 377.93m
+elevation mean half-flat: 146.89m
+elevation mean global: 230.74m
+elevation mean above sealevel: 794.75m
+elevation median global: 0.00m
+elevation median above sealevel: 418.00m
+geographic center of distance squares: 32.322°N, 27.043°E, 0m sealevel, 11029.671km average distance
+parameters: 30arcsec (0.93km) map resolution, 6arcsec (0.19km) calculation resolution, 0m antarctic threshold
+completed: 41s, 120 iterations
+```
