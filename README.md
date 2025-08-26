@@ -45,9 +45,11 @@ https://www.icr.org/article/50  by Henry M. Morris, without tables and maps
   and alternative levels -70m and +70m.
 
 ### Giza, Center of Earth
-Holger Isenberg, October 19, 2003
+Holger Isenberg
 
-https://mars-news.de/pyramids/gizacenter.html
+1st edition, October 19, 2003: https://mars-news.de/pyramids/gizacenter.html
+
+2nd edition, August 25, 2025: https://x.com/areoinfo/status/1960235682200531262
 
  * Article about the calculation history since 1864 and the results.
  * Uses as center definition the minimum sum of great-circle distances
