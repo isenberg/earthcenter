@@ -389,6 +389,8 @@ public class EarthCenter2025 extends JPanel {
 			double piRes = 2 * Math.PI/mapWidth;
 			ConcurrentHashMap<Integer, Double> elevationHistogram = new ConcurrentHashMap<Integer, Double>(10000);
 			AtomicInteger elevationMaxAdder = new AtomicInteger(0);
+			DoubleAdder landCountAdder = new DoubleAdder();
+			DoubleAdder seaCountAdder = new DoubleAdder();
 			DoubleAdder landAreaAdder = new DoubleAdder();
 			DoubleAdder seaAreaAdder = new DoubleAdder();
 			DoubleAdder elevationSumAdder = new DoubleAdder();
@@ -404,10 +406,12 @@ public class EarthCenter2025 extends JPanel {
 						}
 						elevationSumAdder.add(area * elevation);
 						landAreaAdder.add(area);
+						landCountAdder.add(1);
 						elevationMaxAdder.accumulateAndGet(elevation, Math::max);
 						elevationHistogram.merge(elevation, area, Double::sum);
 					} else {
 						seaAreaAdder.add(area);
+						seaCountAdder.add(1);
 					}
 				});
 				if (yt % (int)screenScaleMap == 0) {
@@ -422,20 +426,20 @@ public class EarthCenter2025 extends JPanel {
 			gmap.drawImage(mapImage, null, 0, 0);
 			frame.repaint();
 			int elevationMax = elevationMaxAdder.get();
+			double landCount = landCountAdder.sum();
+			double seaCount = seaCountAdder.sum();
 			double landArea = landAreaAdder.sum();
 			double seaArea = seaAreaAdder.sum();
 			double landRatio = landArea/(landArea+seaArea);
 			double elevationSum = elevationSumAdder.sum();
-			double elevationMeanGlobeHalfFlat = elevationSum / (mapWidth * mapHeight);
-			double elevationMeanGlobe = elevationSum / (landArea + seaArea);
-			double elevationMeanLand = elevationSum / landArea;
+			double elevationMeanGlobe = elevationSum / (landCount + seaCount);
+			double elevationMeanLand = elevationSum / landCount;
 			double elevationMedianLand = median(elevationHistogram);
 			double mapSphereArea = 4 * Math.PI * Math.pow(mapWidth / (2*Math.PI),2);
 			double earthSphereArea = 4 * Math.PI * Math.pow(earthCircumference / (2*Math.PI),2);
 			System.out.printf("sea level=%s%dm, antarctic threshold=%dm, elevation max=%dm, map width: %dpx\n", levelSign, seaLevel, antarcticLevel, elevationMax, mapWidth);
 			System.out.printf("land area: %.0fkm^2, sea area: %.0fkm^2, land/sphere_area ratio: %.0f%%\n", landArea*earthSphereArea/mapSphereArea, seaArea*earthSphereArea/mapSphereArea, 100*landRatio);
-			System.out.printf("elevation mean correct (based on sphere area): %.2fm\n", elevationMeanGlobe);
-			System.out.printf("elevation mean wrong (based on flatmap area): %.2fm\n", elevationMeanGlobeHalfFlat);
+			System.out.printf("global elevation mean: %.2fm\n", elevationMeanGlobe);
 			System.out.printf("land-only based elevation mean: %.2fm\n", elevationMeanLand);
 			System.out.printf("land-only based elevation median: %.2fm\n", elevationMedianLand);
 			if (filePGM != null) {
