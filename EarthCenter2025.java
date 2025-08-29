@@ -1,3 +1,4 @@
+///usr/bin/env JAVA_VERSION=21 java --source 21 --enable-preview "$0" "$@"; exit $?
 /*
  * Geographic Center of Earth Calculator
  *
