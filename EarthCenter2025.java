@@ -140,13 +140,14 @@ import javax.swing.JPanel;
 public class EarthCenter2025 extends JPanel {
 	static BufferedImage mapImg, tmpImg;
 	static final long serialVersionUID = 20250825L;
+	static String mapFilename;
 
 	public static void main(String[] args) {
 		// Program start.
 		JFrame frame = new JFrame("Geographic Center of Earth Calculator    \u00A9 2003 - 2025 Holger Isenberg  @areoinfo  https://areo.info");
 		try {
 			// map in equidistant cylindrical projection (digital elevation model) in uncompressed geoTIFF format:
-			String mapFilename = System.getProperty("map", "ETOPO_2022_v1_60s_N90W180_surface_uncompressed.tif");
+			mapFilename = System.getProperty("map", "ETOPO_2022_v1_60s_N90W180_surface_uncompressed.tif");
 			int level = Integer.getInteger("sealevel", 0); // sea level elevation in meter, example: 0 or 178
 			String startLatStr = System.getProperty("startlat", "-40.0"); // calculation start latitude in positive north degree
 			double startLat = Double.parseDouble(startLatStr);
@@ -156,7 +157,7 @@ public class EarthCenter2025 extends JPanel {
 			double startStep = Double.parseDouble(startStepStr);
 			int mapWidthOpt = Integer.getInteger("mapwidth", 0); // pixels, scale down to this map width for calculation, default from provided map file
 			int calcWidthOpt = Integer.getInteger("calcwidth", 0); // pixels, final near center calculation resolution, default mapWidth
-			String name = System.getProperty("name", null); // optional output result filename
+			String name = System.getProperty("out", null); // optional output result filename prefix
 			int antarcticThreshold = Integer.getInteger("antarctic", 70); // elevation below that threshold south of 60°S is considered water
 			boolean squareMode = Boolean.getBoolean("squaremode"); // if enabled, calculates sum of distance squares instead of plain sum
 
@@ -205,7 +206,7 @@ public class EarthCenter2025 extends JPanel {
 			GradientCalc centerCalc = new GradientCalc(frame, gmap, gtmp);
 			centerCalc.calculate(tiffDEM, level, startLat, startLon, startStep, mapWidth, calcWidth, name, antarcticThreshold, squareMode);
 		} catch(Exception ex) {
-			System.out.println(ex);
+			ex.printStackTrace();
 			frame.dispose();
 		}
 	}
@@ -278,7 +279,7 @@ public class EarthCenter2025 extends JPanel {
 			tiffDEM.getPixel(x, y, pixel);
 			if (y > antarcticYmax && pixel[0] < antarcticThreshold) {
 				// consider this as floating ice shelf which needs to be seen as water
-				return 0;
+				return seaLevel;
 			} else {
 				return pixel[0]; // all 3 tuple elements are identical for monochrome GeoTIFFs
 			}
@@ -361,21 +362,12 @@ public class EarthCenter2025 extends JPanel {
 			screenScaleMap = (double) mapWidth / displayWidth;
 			calcScaleScreen =  (double)displayWidth / calcWidth;
 
-			// optional output map graphics writer
-			PrintWriter filePGM = null;
-			if (outputprefix != null) {
-				String namePGM = outputprefix + seaLevel + "m.pgm";
-				FileWriter writerPGM = new FileWriter(namePGM);
-				filePGM = new PrintWriter(writerPGM);
-				System.out.println("PNM: output \"" + namePGM + "\" " + mapWidth + " x " + mapHeight);
-			}
-
 			// start message
 			if (squareMode) {
-				System.out.println("mode: minimum sum of greatcircle distance squares");
+				System.out.println("mode: minimum sum of greatcircle distance squares (center of gravity)");
 			} else {
 				// default
-				System.out.println("mode: minimum sum of greatcircle distances");
+				System.out.println("mode: minimum sum of greatcircle distances (geometric median)");
 			}
 			System.out.println("display: " + displayWidth + "x" + displayHeight);
 			System.out.println("map raster: " + mapWidth + "x" + mapHeight);
@@ -442,21 +434,28 @@ public class EarthCenter2025 extends JPanel {
 			System.out.printf("global elevation mean: %.2fm\n", elevationMeanGlobe);
 			System.out.printf("land-only based elevation mean: %.2fm\n", elevationMeanLand);
 			System.out.printf("land-only based elevation median: %.2fm\n", elevationMedianLand);
-			if (filePGM != null) {
-				// write map with selected sea level for reference
-				filePGM.println("P2");
+
+			// optional output map writer
+			if (outputprefix != null) {
+				String namePGM = outputprefix + "_" + seaLevel + "m.pnm";
+				FileWriter writerPGM = new FileWriter(namePGM);
+				PrintWriter filePGM = new PrintWriter(writerPGM);
+				System.out.println("writing output map " + mapWidth + "x" + mapHeight + ": " + namePGM);
+				filePGM.println("P1");
 				filePGM.println("# Earth with sea level " + levelSign + seaLevel + "m, antarctic threshold " + antarcticLevel + "m, "
 						+ "land/water ratio " + (int)(landRatio*100.0) + "%");
-				filePGM.println("# global elevation data ETOPO2 from NOAA, http://www.ngdc.noaa.gov/mgg/");
+				filePGM.println("# created with https://github.com/isenberg/earthcenter");
+				filePGM.printf("# base map: %s\n", mapFilename);
 				filePGM.println(mapWidth + " " + mapHeight);
-				filePGM.println("255");
 				for (int yt = 0; yt < mapHeight; yt++) {
+					StringBuilder pgmLineBuilder = new StringBuilder();
 					for (int xt = 0; xt < mapWidth; xt++) {
-						filePGM.printf("%4d", mapPixels[yt*mapWidth + xt] & 0xFF);
+						pgmLineBuilder.append(String.format("%1d", getElevation(xt, yt) > seaLevel ? 1 : 0));
 					}
-					filePGM.println();
+					filePGM.print(pgmLineBuilder.toString());
 				}
 				filePGM.close();
+				writerPGM.close();
 			}
 
 			// center calculation
