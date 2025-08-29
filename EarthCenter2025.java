@@ -450,7 +450,8 @@ public class EarthCenter2025 extends JPanel {
 				for (int yt = 0; yt < mapHeight; yt++) {
 					StringBuilder pgmLineBuilder = new StringBuilder();
 					for (int xt = 0; xt < mapWidth; xt++) {
-						pgmLineBuilder.append(String.format("%1d", getElevation(xt, yt) > seaLevel ? 1 : 0));
+						int elevation = getElevation(xt*geoTiffWidth/mapWidth, yt*geoTiffWidth/mapWidth) - seaLevel;
+						pgmLineBuilder.append(String.format("%1d", elevation > 0 ? 1 : 0));
 					}
 					filePGM.print(pgmLineBuilder.toString());
 				}
