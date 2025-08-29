@@ -1,5 +1,5 @@
 ///usr/bin/env JAVA_VERSION=21 java --source 21 --enable-preview "$0" "$@"; exit $?
-// the line above makes this file executable as a script, but in can also be just started as explained below
+// the line above makes this file executable as a script, but it can also be just started as explained below
 /*
  * Geographic Center of Earth Calculator
  *
