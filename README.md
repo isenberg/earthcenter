@@ -49,7 +49,7 @@ Holger Isenberg
 
 1st edition, October 19, 2003: https://mars-news.de/pyramids/gizacenter.html
 
-2nd edition, August 25, 2025: https://x.com/areoinfo/status/1960235682200531262
+2nd edition, August 25, 2025: https://x.com/areoinfo/status/1960235682200531262 and https://areoinfo.substack.com/giza-center-of-earth
 
  * Article about the calculation history since 1864 and the results.
  * Uses as center definition the minimum sum of great-circle distances
