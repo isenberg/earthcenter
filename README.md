@@ -6,7 +6,8 @@ Holger Isenberg, [@areoinfo](https://x.com/areoinfo), https://areo.info
 
 Geometrically defined, the geographic center is the geometric median
 of all land surfaces within the two dimensions of the spherical surface
-of Earth. The Geoid would more exactly approximate Earth's outer shape,
+of Earth. This location is also known as solution of the Facility Location Problem
+in Operations Research. The Geoid would more exactly approximate Earth's outer shape,
 but as the elevation differences on Earth in relation to its circumference,
 are insignificant, the spherical surface is for this calculation purpose sufficient.
 
@@ -25,6 +26,11 @@ the great circle distance independent from the type of map projection.
 A transformation from the projection of the input map to geographic coordinates
 and unit areas of sample points is done, but this implementation only contains
 the transformation for an equidistant cylindrical projection.
+
+An alternative center definition can be selected with the squaremode parameter.
+That definition uses the minimum sum of the distance squares (power of 2)
+and is equivalent to the center of gravity for the 2d spherical surface
+(not the 3d shape), in geometry also known as centroid.
 
 A current MacBook completes the calculation in less than 1 minute.
 
