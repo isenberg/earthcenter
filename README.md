@@ -32,6 +32,10 @@ That definition uses the minimum sum of the distance squares (power of 2)
 and is equivalent to the center of gravity for the 2d spherical surface
 (not the 3d shape), in geometry also known as centroid.
 
+For better code-readability a single-threaded variant is available
+as EarthCenter2025SingleThread.java. It will run about 10 times slower
+on modern notebooks.
+
 A current MacBook completes the calculation in less than 1 minute.
 
 ## References
