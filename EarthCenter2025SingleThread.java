@@ -115,6 +115,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
@@ -149,7 +150,10 @@ public class EarthCenter2025SingleThread extends JPanel {
 
 	public static void main(String[] args) {
 		// Program start.
-		JFrame frame = new JFrame("Geographic Center of Earth Calculator    \u00A9 2003 - 2025 Holger Isenberg  @areoinfo  https://areo.info");
+		JFrame frame = null;
+		if (!GraphicsEnvironment.isHeadless()) {
+			frame = new JFrame("Geographic Center of Earth Calculator    \u00A9 2003 - 2025 Holger Isenberg  @areoinfo  https://areo.info");
+		}
 		try {
 			// map in equidistant cylindrical projection (digital elevation model) in uncompressed geoTIFF format:
 			mapFilename = System.getProperty("map", "ETOPO_2022_v1_60s_N90W180_surface_uncompressed.tif");
@@ -188,31 +192,38 @@ public class EarthCenter2025SingleThread extends JPanel {
 			} else {
 				calcWidth = calcWidthOpt;
 			}
-			Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-			//int width = Math.min(resPerc * land_w / 100, screenSize.width);
-			int width = Math.min(mapWidth, screenSize.width);
-			//frame.setContentPane(new EarthCenter2025SingleThread());
-			frame.setContentPane(new EarthCenter2025SingleThread());
-			frame.getContentPane().setLayout(null);
-			frame.setSize(width, width/2 + 20);
-			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			//frame.pack();
-			frame.setVisible(true);
-			
+			if (frame != null) {
+				Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+				//int width = Math.min(resPerc * land_w / 100, screenSize.width);
+				int width = Math.min(mapWidth, screenSize.width);
+				//frame.setContentPane(new EarthCenter2025SingleThread());
+				frame.setContentPane(new EarthCenter2025SingleThread());
+				frame.getContentPane().setLayout(null);
+				frame.setSize(width, width/2 + 20);
+				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+				//frame.pack();
+				frame.setVisible(true);
+			}
+
 			// display preparation
-			mapImg = new BufferedImage(frame.getWidth(), frame.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
-			tmpImg = new BufferedImage(frame.getWidth(), frame.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
-			Graphics2D gmap = mapImg.createGraphics();
-			Graphics2D gtmp = tmpImg.createGraphics();
-			gmap.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			gtmp.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			
+			Graphics2D gmap = null, gtmp = null;
+			if (frame != null) {
+				mapImg = new BufferedImage(frame.getWidth(), frame.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
+				tmpImg = new BufferedImage(frame.getWidth(), frame.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
+				gmap = mapImg.createGraphics();
+				gtmp = tmpImg.createGraphics();
+				gmap.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				gtmp.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			}
+
 			// calculation start
 			GradientCalc centerCalc = new GradientCalc(frame, gmap, gtmp);
 			centerCalc.calculate(tiffDEM, level, startLat, startLon, startStep, mapWidth, calcWidth, name, antarcticThreshold, squareMode);
 		} catch(Exception ex) {
 			ex.printStackTrace();
-			frame.dispose();
+			if (frame != null) {
+				frame.dispose();
+			}
 		}
 	}
 
@@ -341,16 +352,18 @@ public class EarthCenter2025SingleThread extends JPanel {
 		public void calculate(Raster tiffDEM, int seaLevel, double startLat, double starLon, double startStep, int mapWidth, int calcWidth, String outputprefix, int antarcticLevel, boolean squareMode) throws IOException {
 			// The geographic center calculation with map display.
 			this.tiffDEM = tiffDEM;
-			int displayWidth = frame.getWidth();
+			int displayWidth = (frame != null) ? frame.getWidth() : 2;
 			int displayHeight = displayWidth / 2;
 			int mapHeight = mapWidth / 2;
 			int calcHeight = calcWidth / 2;
 			Color oceanColor = new Color(0, 30, 50);
 			Color landColor = Color.DARK_GRAY;
 			String levelSign = (seaLevel>0?"+":"");
-			gmap.setBackground(oceanColor);
-			gmap.clearRect(0, 0, displayWidth, displayHeight);
-			frame.repaint();
+			if (frame != null) {
+				gmap.setBackground(oceanColor);
+				gmap.clearRect(0, 0, displayWidth, displayHeight);
+				frame.repaint();
+			}
 
 			// read map size
 			geoTiffWidth = tiffDEM.getWidth();
@@ -374,7 +387,9 @@ public class EarthCenter2025SingleThread extends JPanel {
 				// default
 				System.out.println("mode: minimum sum of greatcircle distances (geometric median)");
 			}
-			System.out.println("display: " + displayWidth + "x" + displayHeight);
+			if (frame != null) {
+				System.out.println("display: " + displayWidth + "x" + displayHeight);
+			}
 			System.out.println("map raster: " + mapWidth + "x" + mapHeight);
 			System.out.println("calculation raster: " + calcWidth + "x" + calcHeight);
 
@@ -410,17 +425,21 @@ public class EarthCenter2025SingleThread extends JPanel {
 						seaCountAdder.add(1);
 					}
 				}
-				if (yt % (int)screenScaleMap == 0) {
-					int dispY = (int)(yt / screenScaleMap);
-					System.arraycopy(rowDraw, 0, mapPixels, dispY * displayWidth, rowDraw.length);
-				}
-				if (yt % (int)screenScaleMap == 0) {
-					gmap.drawImage(mapImage, null, 0, 0);
-					frame.repaint();
+				if (frame != null) {
+					if (yt % (int)screenScaleMap == 0) {
+						int dispY = (int)(yt / screenScaleMap);
+						System.arraycopy(rowDraw, 0, mapPixels, dispY * displayWidth, rowDraw.length);
+					}
+					if (yt % (int)screenScaleMap == 0) {
+						gmap.drawImage(mapImage, null, 0, 0);
+						frame.repaint();
+					}
 				}
 			}
-			gmap.drawImage(mapImage, null, 0, 0);
-			frame.repaint();
+			if (frame != null) {
+				gmap.drawImage(mapImage, null, 0, 0);
+				frame.repaint();
+			}
 			int elevationMax = elevationMaxAdder.get();
 			double landCount = landCountAdder.sum();
 			double seaCount = seaCountAdder.sum();
@@ -506,9 +525,11 @@ public class EarthCenter2025SingleThread extends JPanel {
 				if(np.sum <= pp.sum) {
 					// reached smaller distance sum
 					path.push(new MPoint(np.x, np.y, np.sum));
-					graphics.setColor(Color.green);
-					graphics.fillOval((int)Math.round(np.x*calcScaleScreen) - 5,  (int)Math.round(np.y*calcScaleScreen) - 5,  10,  10);
-					frame.repaint();
+					if (frame != null) {
+						graphics.setColor(Color.green);
+						graphics.fillOval((int)Math.round(np.x*calcScaleScreen) - 5,  (int)Math.round(np.y*calcScaleScreen) - 5,  10,  10);
+						frame.repaint();
+					}
 				} else {
 					// landed at larger distance sum
 					if (mapStep > 2*minMapStep) {
@@ -528,19 +549,21 @@ public class EarthCenter2025SingleThread extends JPanel {
 						completed = true;
 					}
 				}
-				graphics.setBackground(new Color(255, 255, 255, 0));
-				graphics.clearRect(0, 0, displayWidth, displayHeight);
-				for(PathSegment ps : drawPath) {
-					if(ps.gradient > 0) {
-						graphics.setColor(Color.orange);
-					} else {
-						graphics.setColor(Color.green);
+				if (frame != null) {
+					graphics.setBackground(new Color(255, 255, 255, 0));
+					graphics.clearRect(0, 0, displayWidth, displayHeight);
+					for(PathSegment ps : drawPath) {
+						if(ps.gradient > 0) {
+							graphics.setColor(Color.orange);
+						} else {
+							graphics.setColor(Color.green);
+						}
+						graphics.drawLine((int)Math.round(ps.sLon), (int)Math.round(ps.sLat),  (int)Math.round(ps.eLon),  (int)Math.round(ps.eLat));
+						graphics.setColor(Color.white);
+						graphics.drawLine((int)Math.round(ps.sLon), (int)Math.round(ps.sLat),  (int)Math.round(ps.sLon),  (int)Math.round(ps.sLat));
 					}
-					graphics.drawLine((int)Math.round(ps.sLon), (int)Math.round(ps.sLat),  (int)Math.round(ps.eLon),  (int)Math.round(ps.eLat));
-					graphics.setColor(Color.white);
-					graphics.drawLine((int)Math.round(ps.sLon), (int)Math.round(ps.sLat),  (int)Math.round(ps.sLon),  (int)Math.round(ps.sLat));
+					frame.repaint();
 				}
-				frame.repaint();
 				if (mapStep < printThreshold) {
 					if (skipPrint) {
 						System.out.println();
@@ -650,10 +673,12 @@ public class EarthCenter2025SingleThread extends JPanel {
 			// to be able to approximately visually compare calculations
 			// at different step sizes and scale it to km on Earth.
 			// As precise comparison is not possible between different step sizes
-			// the distance sum is recalculated in case the steps size changes. 
-			graphics.setColor(color);
-			graphics.drawOval((int)Math.round((xtrad/piCalcRes - st/2)*calcScaleScreen), (int)Math.round((ytrad/piCalcRes - st/2)*calcScaleScreen),  (int)Math.round(st*calcScaleScreen), (int)Math.round(st*calcScaleScreen));
-			frame.repaint();
+			// the distance sum is recalculated in case the steps size changes.
+			if (frame != null) {
+				graphics.setColor(color);
+				graphics.drawOval((int)Math.round((xtrad/piCalcRes - st/2)*calcScaleScreen), (int)Math.round((ytrad/piCalcRes - st/2)*calcScaleScreen),  (int)Math.round(st*calcScaleScreen), (int)Math.round(st*calcScaleScreen));
+				frame.repaint();
+			}
 			//printf("\rxtrad=%3.0f<B0> ytrad=%3.0f<B0> xt=%5d yt=%5d", xtrad*180/PI, ytrad*180/PI, xt, yt);
 			double sum = 0, count = 0;
 			for(int y=0; y < geoTiffHeight; y+=st) {
@@ -675,9 +700,11 @@ public class EarthCenter2025SingleThread extends JPanel {
 							}
 						}
 			}
-			graphics.setColor(color);
-			graphics.fillOval((int)Math.round((xtrad/piCalcRes - st/2)*calcScaleScreen), (int)Math.round((ytrad/piCalcRes - st/2)*calcScaleScreen), (int)Math.round(st*calcScaleScreen), (int)Math.round(st*calcScaleScreen));
-			frame.repaint();
+			if (frame != null) {
+				graphics.setColor(color);
+				graphics.fillOval((int)Math.round((xtrad/piCalcRes - st/2)*calcScaleScreen), (int)Math.round((ytrad/piCalcRes - st/2)*calcScaleScreen), (int)Math.round(st*calcScaleScreen), (int)Math.round(st*calcScaleScreen));
+				frame.repaint();
+			}
 			sum = sum * earthCircumference / count / (2*Math.PI);
 			return sum;
 		}
